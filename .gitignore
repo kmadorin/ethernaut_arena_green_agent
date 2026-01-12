@@ -9,6 +9,18 @@ build/
 dist/
 wheels/
 *.egg-info
+.pytest_cache/
 
 # Virtual environments
 .venv
+
+# Node.js
+node_modules/
+
+# Foundry build artifacts (lib/ is managed by git submodules)
+contracts/cache/
+contracts/out/
+
+# Runtime
+logs/
+outputs/

@@ -1,0 +1,15 @@
+{
+  "name": "ethernaut-console-sandbox",
+  "version": "0.1.0",
+  "description": "JavaScript console sandbox for Ethernaut Arena with ethers.js",
+  "main": "sandbox.js",
+  "scripts": {
+    "test": "node sandbox.js"
+  },
+  "dependencies": {
+    "ethers": "^6.13.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
