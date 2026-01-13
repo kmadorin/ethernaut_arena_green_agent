@@ -85,22 +85,45 @@ class GreenExecutor(AgentExecutor):
             ServerError: If request is invalid or execution fails
         """
         request_text = context.get_user_input()
-        try:
-            req: EvalRequest = EvalRequest.model_validate_json(request_text)
-            ok, msg = self.agent.validate_request(req)
-            if not ok:
-                raise ServerError(error=InvalidParamsError(message=msg))
-        except ValidationError as e:
-            raise ServerError(error=InvalidParamsError(message=e.json()))
+
+        # Check if this is a valid JSON request or a simple text message
+        is_json_request = request_text.strip().startswith("{")
 
         msg = context.message
-        if msg:
-            task = new_task(msg)
-            await event_queue.enqueue_event(task)
-        else:
+        if not msg:
             raise ServerError(error=InvalidParamsError(message="Missing message."))
 
+        task = new_task(msg)
+        await event_queue.enqueue_event(task)
         updater = TaskUpdater(event_queue, task.id, task.context_id)
+
+        # Handle simple text messages (e.g., "Hello" for A2A conformance tests)
+        if not is_json_request:
+            await updater.update_status(
+                TaskState.working,
+                new_agent_text_message(
+                    "Ethernaut Arena Evaluator ready. Send a valid EvalRequest JSON to start an assessment.",
+                    context_id=context.context_id
+                )
+            )
+            await updater.complete()
+            return
+
+        # Parse and validate the EvalRequest
+        try:
+            req: EvalRequest = EvalRequest.model_validate_json(request_text)
+            ok, err_msg = self.agent.validate_request(req)
+            if not ok:
+                await updater.failed(
+                    new_agent_text_message(f"Invalid request: {err_msg}", context_id=context.context_id)
+                )
+                raise ServerError(error=InvalidParamsError(message=err_msg))
+        except ValidationError as e:
+            await updater.failed(
+                new_agent_text_message(f"JSON validation error: {e}", context_id=context.context_id)
+            )
+            raise ServerError(error=InvalidParamsError(message=e.json()))
+
         await updater.update_status(
             TaskState.working,
             new_agent_text_message(
