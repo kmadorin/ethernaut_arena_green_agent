@@ -242,21 +242,38 @@ uv run pytest --agent-url http://localhost:9009
 
 ## Publishing to AgentBeats
 
-1. **Ensure submodules are checked out:**
-   ```bash
-   git submodule update --init
-   ```
+### 1. Build and Push Docker Image
 
-2. **Build and push Docker image:**
-   ```bash
-   docker build -t ghcr.io/<username>/ethernaut-arena-green-agent:latest .
-   docker push ghcr.io/<username>/ethernaut-arena-green-agent:latest
-   ```
+Ensure submodules are checked out before building:
 
-3. **Register on AgentBeats:**
-   - Go to [agentbeats.dev](https://agentbeats.dev)
-   - Register as a green agent with your Docker image reference
-   - Connect to your leaderboard repository
+```bash
+git submodule update --init
+docker build -t ghcr.io/<username>/ethernaut-arena-green-agent:latest .
+docker push ghcr.io/<username>/ethernaut-arena-green-agent:latest
+```
+
+The CI/CD workflow automatically builds and publishes on push to `main` or when creating git tags.
+
+### 2. Register on AgentBeats
+
+1. Go to [agentbeats.dev](https://agentbeats.dev)
+2. Click "Register Agent" and select "Green Agent"
+3. Provide your Docker image reference (e.g., `ghcr.io/<username>/ethernaut-arena-green-agent:latest`)
+4. Set category to "Cybersecurity Agent"
+5. Copy your agent UUID from the agent page (you'll need this for assessments)
+
+### 3. Create a Leaderboard Repository
+
+See the [Ethernaut Arena Leaderboard](https://github.com/kmadorin/ethernaut_arena_leaderboard) repository for instructions on:
+- Setting up assessments with scenario.toml
+- Running evaluations via GitHub Actions
+- Submitting results via pull requests
+- Configuring webhooks for automatic leaderboard updates
+
+## Related Repositories
+
+- **[Ethernaut Arena Leaderboard](https://github.com/kmadorin/ethernaut_arena_leaderboard)** - Assessment runner and results repository
+- **[Ethernaut Arena Purple Agent](https://github.com/kmadorin/ethernaut_arena_purple_agent)** - Baseline AI solver implementation
 
 ## CI/CD
 
